@@ -49,7 +49,6 @@ class Crontab
         } else {
             foreach ($newJobs as $newJob) {
                 foreach ($this->getJobs() as $job) {
-                echo 'ici ';
                     if ($newJob->getHash() !== $job->getHash()) {
                         $this->addJob($newJob);
                     }
@@ -82,7 +81,7 @@ class Crontab
                 $job->parse($line);
                 $newJobs[] = $job;
             } catch (\Exception $e) {
-                throw new \InvalidArgumentException(sprintf('Line #%d of file: "%s" is invalid.', $lineno, $path));
+                throw new \InvalidArgumentException(sprintf('Line #%d of file: "%s" is invalid. %s', $lineno, $path, $e));
             }
         }
 
