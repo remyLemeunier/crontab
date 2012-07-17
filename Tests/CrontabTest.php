@@ -19,21 +19,27 @@ class CrontabTest extends \PHPUnit_Framework_TestCase
         $this->crontab = new Crontab();
 
         $this->job1 = new Job();
+        $this->job1->setCommand('cmd');
 
         $this->job2 = new Job();
+        $this->job2->setCommand('cmd');
+        $this->job2->setActive(false);
     }
 
-    public function testComments()
+    public function testSetterGetter()
     {
-        $this->job1->setComments('comment');
-        $this->assertStringStartsWith('# comment', $this->job1->prepareComments());
+        $this->assertNull($this->crontab->getUser());
+        $this->assertEquals('root', $this->crontab->setUser('root')->getUser());
 
-        $this->job1->setComments(array('comment l1', 'comment l2'));
-        $this->assertStringStartsWith('# comment l1 comment l2', $this->job1->prepareComments());
-    }
+        $this->assertCount(0, $this->crontab->getJobs());
+        $this->crontab->setJobs(array($this->job1, $this->job2));
+        $this->assertCount(2, $this->crontab->getJobs());
 
-    public function testAddingJob()
-    {
+        $this->assertEquals("", $this->crontab->getMailto());
+        $this->assertEquals("contact@yzalis.com", $this->crontab->setMailto('contact@yzalis.com')->getMailto());
+        $this->assertStringStartsWith("MAILTO=contact@yzalis.com"."\n", $this->crontab->render());
+
+        $this->crontab->removeAllJobs();
         $this->assertCount(0, $this->crontab->getJobs());
 
         $job = new Job();
@@ -47,8 +53,22 @@ class CrontabTest extends \PHPUnit_Framework_TestCase
 
     public function testRender()
     {
-        $this->crontab->addJob($this->job1)->addJob($this->job2->setActive(false));
-        //var_dump($this->crontab->render());
+        $this->crontab
+            ->addJob($this->job1)
+            ->addJob($this->job2)
+        ;
+        $this->assertEquals(
+            "0 * * * * cmd  "."\n"."#0 * * * * cmd  "."\n",
+            $this->crontab->render()
+        );
+    }
+
+    public function testWriteFile()
+    {
+        $this->crontab->addJob($this->job1);
+        $this->assertEquals('Yzalis\Components\Crontab\Crontab', get_class($this->crontab->write()));
+        $this->crontab->removeAllJobs();
+        $this->assertEquals('Yzalis\Components\Crontab\Crontab', get_class($this->crontab->write()));
     }
 
     public function testParseFile()
@@ -60,11 +80,5 @@ class CrontabTest extends \PHPUnit_Framework_TestCase
         $filename = __DIR__ . '/Fixtures/valid_crontab.txt';
         $jobs = $this->crontab->parseFile($filename);
         $this->assertCount(8, $jobs);
-    }
-
-    public function testRemovingJobs()
-    {
-        $this->crontab->removeAllJobs();
-        $this->assertCount(0, $this->crontab->getJobs());
     }
 }

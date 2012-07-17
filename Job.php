@@ -27,7 +27,7 @@ class Job
     /**
      * @var string
      */
-    private $hour = "10";
+    private $hour = "*";
 
     /**
      * @var string
@@ -58,6 +58,11 @@ class Job
      * @var boolean
      */
     private $active = true;
+
+    /**
+     * @var $log
+     */
+    private $log = null;
 
     /**
      * @var $hash
@@ -93,7 +98,7 @@ class Job
             $command
         ) = $detail;
 
-        $comments = null;
+        $comments = $log = null;
         if ($pos = strpos($command, '#')) {
             $comments = trim(substr($command, $pos + 1));
             $command = trim(substr($command, 0, $pos));
@@ -106,6 +111,7 @@ class Job
             ->setMonth($month)
             ->setDayOfWeek($dayOfWeek)
             ->setCommand($command)
+            ->setLog($log)
             ->setComments($comments)
         ;
 
@@ -129,7 +135,7 @@ class Job
      *
      * @return array
      */
-    private function getEntries()
+    public function getEntries()
     {
         return array(
             $this->getMinute(),
@@ -138,6 +144,8 @@ class Job
             $this->getMonth(),
             $this->getDayOfWeek(),
             $this->getCommand(),
+            $this->prepareLog(),
+            $this->prepareComments(),
         );
     }
 
@@ -148,11 +156,12 @@ class Job
      */
     public function render()
     {
-        $line = ($this->getActive()) ? "#": "";
-        $line .= implode(" ", $this->getEntries());
-        if ($this->getComments()) {
-            $line .= $this->prepareComments();
+        if (null === $this->getCommand()) {
+            throw new \InvalidArgumentException('You must specify a command to run.');
         }
+
+        $line = $this->getActive() ? "": "#";
+        $line .= implode(" ", $this->getEntries());
 
         return $line . "\n";
     }
@@ -163,8 +172,26 @@ class Job
      * @return string
      */
     public function prepareComments()
+    {   
+        if (null !== $this->getComments()) {
+            return '# ' . $this->getComments();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Prepare log
+     *
+     * @return string
+     */
+    public function prepareLog()
     {
-        return '# ' . $this->getComments();
+        if (null !== $this->getLog()) {
+            return '> ' . $this->getLog();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -262,11 +289,21 @@ class Job
     }
 
     /**
+     * Return log path
+     *
+     * @return string
+     */
+    public function getLog()
+    {
+        return $this->log;
+    }
+
+    /**
      * Set the minute (* 1 1-10,11-20,30-59 1-59 *\/1)
      *
      * @param string
      *
-     * @return $this
+     * @return Job
      */
     public function setMinute($minute)
     {
@@ -284,7 +321,7 @@ class Job
      *
      * @param string
      *
-     * @return $this
+     * @return Job
      */
     public function setHour($hour)
     {
@@ -302,7 +339,7 @@ class Job
      *
      * @param string
      *
-     * @return $this
+     * @return Job
      */
     public function setDayOfMonth($dayOfMonth)
     {
@@ -320,7 +357,7 @@ class Job
      *
      * @param string
      *
-     * @return $this
+     * @return Job
      */
     public function setMonth($month)
     {
@@ -338,7 +375,7 @@ class Job
      *
      * @param string
      *
-     * @return $this
+     * @return Job
      */
     public function setDayOfWeek($dayOfWeek)
     {
@@ -356,7 +393,7 @@ class Job
      *
      * @param string
      *
-     * @return $this
+     * @return Job
      */
     public function setCommand($command)
     {
@@ -370,11 +407,25 @@ class Job
     }
 
     /**
+     * Set the log file path
+     *
+     * @param string
+     *
+     * @return Job
+     */
+    public function setLog($log)
+    {
+        $this->log = $log;
+
+        return $this->generateHash();
+    }
+
+    /**
      * Set the comments
      *
      * @param string
      *
-     * @return $this
+     * @return Job
      */
     public function setComments($comments)
     {
@@ -392,7 +443,7 @@ class Job
      *
      * @param boolean
      *
-     * @return $this
+     * @return Job
      */
     public function setActive($active)
     {

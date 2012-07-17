@@ -10,11 +10,59 @@ use Yzalis\Components\Crontab\Job;
 class Crontab
 {
     /**
-     * A collection of Job
+     * A collection of job
      *
-     * @var array $jobs A collection of Yzalis\Compoenents\Crontab\Job
+     * @var array $jobs  Yzalis\Compoenents\Crontab\Job
      */
     private $jobs = array();
+
+    /**
+     * Location of the crontab executable
+     *
+     * @var string
+     */
+    public $crontabExecutable = '/usr/bin/crontab';
+
+    /**
+     * Location to save the temporary crontab file.
+     *
+     * @var string
+     */
+    private $tempFile = null;
+
+    /**
+     * The user to 
+     *
+     * @var $user
+     */
+    private $user = null;
+    
+    /**
+     * An email where crontab execution report will be sent
+     * 
+     * @var $user
+     */
+    private $mailto = "";
+
+    /**
+     * Constructor
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->generateTempFile();
+    }
+
+    /**
+     * Destrutor
+     */
+    public function __destruct()
+    {
+        if ($this->tempFile && is_file($this->tempFile)) {
+            unlink($this->tempFile);
+        }
+    }
 
     /**
      * Render the crontab and associated jobs
@@ -24,6 +72,9 @@ class Crontab
     public function render()
     {
         $content = "";
+        if ($this->getMailto()) {
+            $content = "MAILTO=" . $this->getMailto() . "\n";
+        }
         foreach ($this->getJobs() as $job) {
             $content .= $job->render();
         }
@@ -36,7 +87,7 @@ class Crontab
      *
      * @param string $filename
      *
-     * @return $this
+     * @return Crontab
      */
     public function addJobsFromFile($filename)
     {
@@ -96,32 +147,147 @@ class Crontab
      */
     public function write()
     {
-        $content = $this->render();
+        $this->writeCrontabInTempFile();
+        
+        $out = $this->exec($this->crontabCommand() . ' ' . $this->tempFile . ' 2>&1', $ret);
+        if ($ret != 0) {
+            throw new \UnexpectedValueException(
+                $out . "\n"  . $this->render(), $ret
+            );
+        }
 
-        echo '@toto : $crontab->write()';exit;
+        return $this;
+    }
 
+    private function writeCrontabInTempFile()
+    {
+        file_put_contents($this->tempFile, $this->render(), LOCK_EX);
     }
 
     /**
-     * Prepare the command to write somme content in crontab file
-     *
-     * @param string $content
+     * Calcuates crontab command
      *
      * @return string
      */
-    private function _prepareCommand($content)
+    protected function crontabCommand()
     {
-        return 'crontab';
+        $cmd = '';
+        if ($this->getUser()) {
+            $cmd .= sprintf('sudo -u %s ', $this->getUser());
+        }
+        $cmd .= $this->getCrontabExecutable();
+
+        return $cmd;
     }
 
-    /*
-    private function _exec()
+    /**
+     * Runs command in terminal
+     *
+     * @param string  $command
+     * @param integer $returnVal
+     *
+     * @return string
+     */
+    private function exec($command, & $returnVal)
     {
         ob_start();
         system($command, $returnVal);
         $output = ob_get_clean();
 
         return $output;
+    }
+
+    /**
+     * Generate temporary crontab file
+     *
+     * @return Crontab
+     */
+    protected function generateTempFile()
+    {
+        if ($this->tempFile && is_file($this->tempFile)) {
+            unlink($this->tempFile);
+        }
+        $tempDir = sys_get_temp_dir();
+        $this->tempFile = tempnam($tempDir, 'crontemp');
+        chmod($this->tempFile, 0666);
+
+        return $this;
+    }
+
+    /**
+     * Get unix user to add crontab
+     *
+     * @return string
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * Set unix user to add crontab
+     *
+     * @param string $user
+     *
+     * @return Crontab
+     */
+    public function setUser($user)
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * Get crontab executable location
+     *
+     * @return string
+     */
+    public function getCrontabExecutable()
+    {
+        return $this->crontabExecutable;
+    }
+
+    /**
+     * Set unix user to add crontab
+     *
+     * @param string $crontabExecutable
+     *
+     * @return Crontab
+     */
+    public function setCrontabExecutable($crontabExecutable)
+    {
+        $this->crontabExecutable = $crontabExecutable;
+
+        return $this;
+    }
+
+    /**
+     * Get mailto
+     *
+     * @return string
+     */
+    public function getMailto()
+    {
+        return $this->mailto;
+    }
+
+    /**
+     * Set mailto
+     *
+     * @param string $mailto
+     *
+     * @return Crontab
+     */
+    public function setMailto($mailto)
+    {
+        if (!filter_var($mailto, FILTER_VALIDATE_EMAIL)) {
+            throw new \InvalidArgumentException(sprintf('Mailto "%s" is incorect', $mailto));
+        }
+
+        $this->mailto = $mailto;
+
+        return $this;
     }
 
     /**
@@ -135,11 +301,11 @@ class Crontab
     }
 
     /**
-     * Adda new job to the crontab
+     * Add a new job to the crontab
      *
      * @param Yzalis\Components\Job $job
      *
-     * @return $this
+     * @return Crontab
      */
     public function addJob(Job $job)
     {
@@ -153,7 +319,7 @@ class Crontab
      *
      * @param array $jobs
      *
-     * @return $this
+     * @return Crontab
      */
     public function setJobs(array $jobs)
     {
@@ -167,7 +333,7 @@ class Crontab
     /**
      * Remove all job for current crontab
      *
-     * @return $this
+     * @return Crontab
      */
     public function removeAllJobs()
     {
