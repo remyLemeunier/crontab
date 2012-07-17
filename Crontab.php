@@ -40,37 +40,10 @@ class Crontab
      */
     public function addJobsFromFile($filename)
     {
-        $path = realpath($filename);
-        if (!$path || !is_readable($path)) {
-            throw new \InvalidArgumentException(sprintf('"%s" don\'t exists or isn\'t readable', $filename));
-        }
+        // parse file and retrieve valid jobs
+        $newJobs = $this->parseFile($filename);
 
-        $this->parseFile($path);
-
-        return $this;
-    }
-
-
-    /**
-     * Parse input cron file to cron entires
-     *
-     * @param string $path
-     */
-    private function parseFile($path)
-    {
-        $newJobs = $errors = array();
-
-        $lines = file($path);
-        foreach ($lines as $lineno => $line) {
-            try {
-                $job = new Job();
-                $job->parse($line);
-                $newJobs[] = $job;
-            } catch (\Exception $e) {
-                throw new \InvalidArgumentException(sprintf('Line #%d of file: "%s" is invalid.', $lineno, $path));
-            }
-        }
-
+        // add new jobs to the current crontab
         if (count($this->getJobs()) == 0) {
             $this->setJobs($newJobs);
         } else {
@@ -83,12 +56,51 @@ class Crontab
                 }
             }
         }
+
+        return $this;
     }
 
+
+    /**
+     * Parse input cron file to cron entires
+     *
+     * @param string $path
+     */
+    public function parseFile($filename)
+    {
+        // check the availability of the file
+        $path = realpath($filename);
+        if (!$path || !is_readable($path)) {
+            throw new \InvalidArgumentException(sprintf('"%s" don\'t exists or isn\'t readable', $filename));
+        }
+
+        // parse every line of the file
+        $lines = file($path);
+        foreach ($lines as $lineno => $line) {
+            try {
+                $job = new Job();
+                $job->parse($line);
+                $newJobs[] = $job;
+            } catch (\Exception $e) {
+                throw new \InvalidArgumentException(sprintf('Line #%d of file: "%s" is invalid.', $lineno, $path));
+            }
+        }
+
+        return $newJobs;
+    }
+
+    /**
+     * Write the crontab to the system
+     *
+     * @param 
+     * 
+     * @return 
+     */
     public function write()
     {
         $content = $this->render();
 
+        echo '@toto : $crontab->write()';exit;
 
     }
 
