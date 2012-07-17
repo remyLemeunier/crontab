@@ -17,7 +17,7 @@ class CrontabTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->crontab = new Crontab();
-        
+
         $this->job1 = new Job();
 
         $this->job2 = new Job();
@@ -56,7 +56,6 @@ class CrontabTest extends \PHPUnit_Framework_TestCase
         $filename = __DIR__ . '/Fixtures/valid_crontab.txt';
         $this->crontab->addJobsFromFile($filename);
         $this->assertCount(8, $this->crontab->getJobs());
-
 
         $filename = __DIR__ . '/Fixtures/valid_crontab.txt';
         $jobs = $this->crontab->parseFile($filename);

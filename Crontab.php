@@ -18,7 +18,7 @@ class Crontab
 
     /**
      * Render the crontab and associated jobs
-     * 
+     *
      * @return string
      */
     public function render()
@@ -34,8 +34,8 @@ class Crontab
     /**
      * Parse input cron file to cron entires and add them to the current object
      *
-     * @param string $filebame
-     * 
+     * @param string $filename
+     *
      * @return $this
      */
     public function addJobsFromFile($filename)
@@ -59,11 +59,10 @@ class Crontab
         return $this;
     }
 
-
     /**
      * Parse input cron file to cron entires
      *
-     * @param string $path
+     * @param string $filename
      */
     public function parseFile($filename)
     {
@@ -91,9 +90,9 @@ class Crontab
     /**
      * Write the crontab to the system
      *
-     * @param 
-     * 
-     * @return 
+     * @param
+     *
+     * @return
      */
     public function write()
     {
@@ -107,7 +106,7 @@ class Crontab
      * Prepare the command to write somme content in crontab file
      *
      * @param string $content
-     * 
+     *
      * @return string
      */
     private function _prepareCommand($content)
@@ -127,7 +126,7 @@ class Crontab
 
     /**
      * Get all crontab jobs
-     * 
+     *
      * @return array An array of Yzalis\Components\Job
      */
     public function getJobs()
@@ -139,7 +138,7 @@ class Crontab
      * Adda new job to the crontab
      *
      * @param Yzalis\Components\Job $job
-     * 
+     *
      * @return $this
      */
     public function addJob(Job $job)
@@ -152,8 +151,8 @@ class Crontab
     /**
      * Adda new job to the crontab
      *
-     * @param Yzalis\Components\Job $job
-     * 
+     * @param array $jobs
+     *
      * @return $this
      */
     public function setJobs(array $jobs)
@@ -167,7 +166,7 @@ class Crontab
 
     /**
      * Remove all job for current crontab
-     * 
+     *
      * @return $this
      */
     public function removeAllJobs()

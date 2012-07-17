@@ -17,28 +17,28 @@ class Job
         'month'      => '/^((\*)|(\d?([-,\d?])*)|(\*\/\d?))$/',
         'dayOfWeek'  => '/^((\*)|(\d?([-,\d?])*)|(\*\/\d?))$/',
         'command'    => '/^(.)*$/',
-    ); 
+    );
 
     /**
      * @var string
      */
     private $minute = "0";
-    
+
     /**
      * @var string
      */
     private $hour = "10";
-    
+
     /**
      * @var string
      */
     private $dayOfMonth = "*";
-    
+
     /**
      * @var string
      */
     private $month = "*";
-    
+
     /**
      * @var string
      */
@@ -55,7 +55,7 @@ class Job
     private $comments = null;
 
     /**
-     * @var boolean 
+     * @var boolean
      */
     private $active = true;
 
@@ -68,6 +68,7 @@ class Job
      * Parse crontab line into Job object
      *
      * @param string $jobSpec
+     *
      * @return Yzalis\Components\
      */
     public function parse($jobSpec)
@@ -77,8 +78,8 @@ class Job
             $jobSpec = trim(substr($jobSpec, 1));
         }
 
-        $detail = explode(' ', $jobSpec, 6); // var_dump($detail);
-        
+        $detail = explode(' ', $jobSpec, 6);
+
         if (count($detail) != 6) {
             throw new \InvalidArgumentException('Wrong job number of arguments.');
         }
@@ -90,12 +91,12 @@ class Job
             $month,
             $dayOfWeek,
             $command
-        ) = $detail; // var_dump($command);
+        ) = $detail;
 
         $comments = null;
-        if ($pos = strpos($command, '#')) { // var_dump($command);
-            $comments = trim(substr($command, $pos + 1)); // var_dump($comments);
-            $command = trim(substr($command, 0, $pos)); // var_dump($command);
+        if ($pos = strpos($command, '#')) {
+            $comments = trim(substr($command, $pos + 1));
+            $command = trim(substr($command, 0, $pos));
         }
 
         $this
@@ -111,21 +112,26 @@ class Job
         return $this->generateHash();
     }
 
+    /**
+     * Generate a unique hash related to the job entries
+     *
+     * @return string
+     */
     private function generateHash()
     {
-        $this->hash = hash('md5', $this->render());
+        $this->hash = hash('md5', serialize($this->getEntries()));
 
         return $this;
     }
 
     /**
-     * Render the job for crontab
-     * 
-     * @return string
+     * Get an array of job entries
+     *
+     * @return array
      */
-    public function render()
+    private function getEntries()
     {
-        $entry = array(
+        return array(
             $this->getMinute(),
             $this->getHour(),
             $this->getDayOfMonth(),
@@ -133,18 +139,29 @@ class Job
             $this->getDayOfWeek(),
             $this->getCommand(),
         );
+    }
 
-        $line = "";
+    /**
+     * Render the job for crontab
+     *
+     * @return string
+     */
+    public function render()
+    {
+        $line = ($this->getActive()) ? "#": "";
+        $line .= implode(" ", $this->getEntries());
         if ($this->getComments()) {
             $line .= $this->prepareComments();
         }
 
-        $line .= ($this->getActive()) ? "#": "";
-        $line .= implode(" ", $entry) . "\n";
-
-        return $line;
+        return $line . "\n";
     }
 
+    /**
+     * Prepare comment
+     *
+     * @return string
+     */
     public function prepareComments()
     {
         return '# ' . $this->getComments();
@@ -152,7 +169,7 @@ class Job
 
     /**
      * Return the minute
-     * 
+     *
      * @return string
      */
     public function getMinute()
@@ -162,7 +179,7 @@ class Job
 
     /**
      * Return the hour
-     * 
+     *
      * @return string
      */
     public function getHour()
@@ -172,7 +189,7 @@ class Job
 
     /**
      * Return the day of month
-     * 
+     *
      * @return string
      */
     public function getDayOfMonth()
@@ -182,7 +199,7 @@ class Job
 
     /**
      * Return the month
-     * 
+     *
      * @return string
      */
     public function getMonth()
@@ -192,7 +209,7 @@ class Job
 
     /**
      * Return the day of week
-     * 
+     *
      * @return string
      */
     public function getDayOfWeek()
@@ -202,7 +219,7 @@ class Job
 
     /**
      * Return the command
-     * 
+     *
      * @return string
      */
     public function getCommand()
@@ -212,7 +229,7 @@ class Job
 
     /**
      * Return the comments
-     * 
+     *
      * @return string
      */
     public function getComments()
@@ -222,7 +239,7 @@ class Job
 
     /**
      * Return the active status
-     * 
+     *
      * @return boolean
      */
     public function getActive()
@@ -232,7 +249,7 @@ class Job
 
     /**
      * Return the job unique hash
-     * 
+     *
      * @return string
      */
     public function getHash()
@@ -248,7 +265,7 @@ class Job
      * Set the minute (* 1 1-10,11-20,30-59 1-59 *\/1)
      *
      * @param string
-     * 
+     *
      * @return $this
      */
     public function setMinute($minute)
@@ -258,7 +275,7 @@ class Job
         }
 
         $this->minute = $minute;
-        
+
         return $this->generateHash();
     }
 
@@ -266,7 +283,7 @@ class Job
      * Set the hour
      *
      * @param string
-     * 
+     *
      * @return $this
      */
     public function setHour($hour)
@@ -276,7 +293,7 @@ class Job
         }
 
         $this->hour = $hour;
-        
+
         return $this->generateHash();
     }
 
@@ -284,7 +301,7 @@ class Job
      * Set the day of month
      *
      * @param string
-     * 
+     *
      * @return $this
      */
     public function setDayOfMonth($dayOfMonth)
@@ -294,7 +311,7 @@ class Job
         }
 
         $this->dayOfMonth = $dayOfMonth;
-        
+
         return $this->generateHash();
     }
 
@@ -302,7 +319,7 @@ class Job
      * Set the month
      *
      * @param string
-     * 
+     *
      * @return $this
      */
     public function setMonth($month)
@@ -312,7 +329,7 @@ class Job
         }
 
         $this->month = $month;
-        
+
         return $this->generateHash();
     }
 
@@ -320,7 +337,7 @@ class Job
      * Set the day of week
      *
      * @param string
-     * 
+     *
      * @return $this
      */
     public function setDayOfWeek($dayOfWeek)
@@ -330,7 +347,7 @@ class Job
         }
 
         $this->dayOfWeek = $dayOfWeek;
-        
+
         return $this->generateHash();
     }
 
@@ -338,7 +355,7 @@ class Job
      * Set the command
      *
      * @param string
-     * 
+     *
      * @return $this
      */
     public function setCommand($command)
@@ -346,9 +363,9 @@ class Job
         if (!preg_match($this->regex['command'], $command)) {
             throw new \InvalidArgumentException(sprintf('Command "%s" is incorect', $command));
         }
-        
+
         $this->command = $command;
-        
+
         return $this->generateHash();
     }
 
@@ -356,18 +373,17 @@ class Job
      * Set the comments
      *
      * @param string
-     * 
+     *
      * @return $this
      */
     public function setComments($comments)
     {
-        if (is_array($comments))
-        {
-            $comments = implode($comments, ' '); 
+        if (is_array($comments)) {
+            $comments = implode($comments, ' ');
         }
 
         $this->comments = $comments;
-        
+
         return $this->generateHash();
     }
 
@@ -375,7 +391,7 @@ class Job
      * Set the active status
      *
      * @param boolean
-     * 
+     *
      * @return $this
      */
     public function setActive($active)
@@ -385,7 +401,7 @@ class Job
         }
 
         $this->active = $active;
-        
+
         return $this->generateHash();
     }
 }
