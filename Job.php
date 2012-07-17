@@ -92,7 +92,7 @@ class Job
             $command
         ) = $detail; // var_dump($command);
 
-        $comment = null;
+        $comments = null;
         if ($pos = strpos($command, '#')) { // var_dump($command);
             $comments = trim(substr($command, $pos + 1)); // var_dump($comments);
             $command = trim(substr($command, 0, $pos)); // var_dump($command);
