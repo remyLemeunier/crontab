@@ -31,15 +31,15 @@ class Crontab
     private $tempFile = null;
 
     /**
-     * The user to 
+     * The user to
      *
      * @var $user
      */
     private $user = null;
-    
+
     /**
      * An email where crontab execution report will be sent
-     * 
+     *
      * @var $user
      */
     private $mailto = "";
@@ -148,7 +148,7 @@ class Crontab
     public function write()
     {
         $this->writeCrontabInTempFile();
-        
+
         $out = $this->exec($this->crontabCommand() . ' ' . $this->tempFile . ' 2>&1', $ret);
         if ($ret != 0) {
             throw new \UnexpectedValueException(

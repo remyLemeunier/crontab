@@ -172,7 +172,7 @@ class Job
      * @return string
      */
     public function prepareComments()
-    {   
+    {
         if (null !== $this->getComments()) {
             return '# ' . $this->getComments();
         } else {
