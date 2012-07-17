@@ -1,6 +1,8 @@
 Crontab Component
 =================
 
+[![Build Status](https://secure.travis-ci.org/yzalis/crontab.png?branch=master)](http://travis-ci.org/yzalis/crontab)
+
 Crontab provide a php 5.3 lib to create crontab file.
 
 	use Yzalis\Component\Crontab;
