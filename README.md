@@ -5,8 +5,8 @@ Crontab Component
 
 Crontab provide a php 5.3 lib to create crontab file.
 
-	use Yzalis\Component\Crontab;
-	use Yzalis\Component\Job;
+	use Yzalis\Components\Crontab\Crontab;
+	use Yzalis\Components\Crontab\Job;
 
 	$job = new Job();
 	$job
@@ -19,20 +19,31 @@ Crontab provide a php 5.3 lib to create crontab file.
 	;
 
 	$crontab = new Crontab();
+	$crontab->setMailto('your.email@email.com');
 	$crontab->addJob($job);
 
 	$crontab->write();
 
+You can render what you have created:
+
+	echo $crontab->render();
+
 You can also parse existing crontab file
 
-	use Yzalis\Component\Crontab;
+	use Yzalis\Components\Crontab\Crontab;
+	use Yzalis\Components\Crontab\Job;
 
     $crontab = new Crontab();
     $jobs = $crontab->parseFile($filename);
 
+And then you can delete a job you don't want anymore:
+	$crontab->removeJob($theJobYouWantToDelete);
+
 Resources
 ---------
 
-You can run the unit tests with the following command:
+You can run the unit tests with the following command. You need to be in the crontab directory and have phpunit installed on your computer:
 
     phpunit
+
+Unit tests ll delete your actual crontab. Save it before testing the crontab component.

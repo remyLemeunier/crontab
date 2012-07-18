@@ -12,7 +12,7 @@ use Yzalis\Components\Crontab\Job;
 class Crontab
 {
     /**
-     * A collection of job
+     * A collection of jobs
      *
      * @var array $jobs  Yzalis\Compoenents\Crontab\Job
      */
@@ -33,7 +33,7 @@ class Crontab
     private $tempFile = null;
 
     /**
-     * The user to
+     * This option causes sudo to run the command as a specified user otherwise sudo is not used
      *
      * @var $user
      */
@@ -48,8 +48,6 @@ class Crontab
 
     /**
      * Constructor
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -75,7 +73,7 @@ class Crontab
     {
         $content = "";
         if ($this->getMailto()) {
-            $content = "MAILTO=" . $this->getMailto() . "\n";
+            $content = "MAILTO=" . $this->getMailto() . PHP_EOL;
         }
         foreach ($this->getJobs() as $job) {
             $content .= $job->render();
@@ -85,7 +83,7 @@ class Crontab
     }
 
     /**
-     * Parse input cron file to cron entires and add them to the current object
+     * Parse input cron file to cron entries and add them to the current object
      *
      * @param string $filename
      *
@@ -116,6 +114,8 @@ class Crontab
      * Parse input cron file to cron entires
      *
      * @param string $filename
+     *
+     * @return array of Jobs
      */
     public function parseFile($filename)
     {
@@ -143,9 +143,7 @@ class Crontab
     /**
      * Write the crontab to the system
      *
-     * @param
-     *
-     * @return
+     * @return Crontab
      */
     public function write()
     {
@@ -161,6 +159,9 @@ class Crontab
         return $this;
     }
 
+    /**
+     * Write the crontab in the temp file
+     */
     private function writeCrontabInTempFile()
     {
         file_put_contents($this->tempFile, $this->render(), LOCK_EX);
@@ -333,7 +334,7 @@ class Crontab
     }
 
     /**
-     * Remove all job for current crontab
+     * Remove all job in the current crontab
      *
      * @return Crontab
      */
@@ -345,7 +346,9 @@ class Crontab
     }
 
     /**
-     * Remove all job for current crontab
+     * Remove a specified job in the current crontab
+     *
+     * @param $job
      *
      * @return Crontab
      */
