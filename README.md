@@ -37,6 +37,7 @@ You can also parse existing crontab file
     $jobs = $crontab->parseFile($filename);
 
 And then you can delete a job you don't want anymore:
+
 	$crontab->removeJob($theJobYouWantToDelete);
 
 Resources
