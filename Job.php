@@ -4,6 +4,8 @@ namespace Yzalis\Components\Crontab;
 
 /**
  * Represent a cron job
+ *
+ * @author Benjamin Laugueux <benjamin@yzalis.com>
  */
 class Job
 {
@@ -125,7 +127,15 @@ class Job
      */
     private function generateHash()
     {
-        $this->hash = hash('md5', serialize($this->getEntries()));
+        $this->hash = hash('md5', serialize(array(
+            $this->getMinute(),
+            $this->getHour(),
+            $this->getDayOfMonth(),
+            $this->getMonth(),
+            $this->getDayOfWeek(),
+            $this->getCommand(),
+            
+        )));
 
         return $this;
     }

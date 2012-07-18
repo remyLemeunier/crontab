@@ -5,6 +5,8 @@ use Yzalis\Components\Crontab\Job;
 
 /**
  * JobTest
+ *
+ * @author Benjamin Laugueux <benjamin@yzalis.com>
  */
 class JobTest extends \PHPUnit_Framework_TestCase
 {

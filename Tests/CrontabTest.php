@@ -4,7 +4,9 @@ use Yzalis\Components\Crontab\Crontab;
 use Yzalis\Components\Crontab\Job;
 
 /**
- * CSSToInlineStylesTest
+ * CrontabTest
+ *
+ * @author Benjamin Laugueux <benjamin@yzalis.com>
  */
 class CrontabTest extends \PHPUnit_Framework_TestCase
 {
@@ -22,7 +24,7 @@ class CrontabTest extends \PHPUnit_Framework_TestCase
         $this->job1->setCommand('cmd');
 
         $this->job2 = new Job();
-        $this->job2->setCommand('cmd');
+        $this->job2->setCommand('cmd2');
         $this->job2->setActive(false);
     }
 
@@ -45,10 +47,20 @@ class CrontabTest extends \PHPUnit_Framework_TestCase
         $job = new Job();
         $this->crontab->addJob($job);
         $this->assertCount(1, $this->crontab->getJobs());
+        $this->crontab->addJob($job);
+        $this->assertCount(1, $this->crontab->getJobs());
 
         $job = new Job();
+        $job->setCommand('test');
         $this->crontab->addJob($job);
         $this->assertCount(2, $this->crontab->getJobs());
+
+        $this->crontab->removeAllJobs();
+        $this->crontab->setJobs(array($this->job1, $this->job2));
+        $this->crontab->removeJob($this->job1);
+        $this->assertCount(1, $this->crontab->getJobs());
+        $job = $this->crontab->getJobs();
+        $this->assertEquals(array_shift($job), $this->job2);
     }
 
     public function testRender()
@@ -58,7 +70,7 @@ class CrontabTest extends \PHPUnit_Framework_TestCase
             ->addJob($this->job2)
         ;
         $this->assertEquals(
-            "0 * * * * cmd  "."\n"."#0 * * * * cmd  "."\n",
+            "0 * * * * cmd  " . "\n" . "#0 * * * * cmd2  " . "\n",
             $this->crontab->render()
         );
     }

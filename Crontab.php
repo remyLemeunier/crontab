@@ -6,6 +6,8 @@ use Yzalis\Components\Crontab\Job;
 
 /**
  * Represent a crontab
+ *
+ * @author Benjamin Laugueux <benjamin@yzalis.com>
  */
 class Crontab
 {
@@ -309,7 +311,7 @@ class Crontab
      */
     public function addJob(Job $job)
     {
-        $this->jobs[] = $job;
+        $this->jobs[$job->getHash()] = $job;
 
         return $this;
     }
@@ -338,6 +340,18 @@ class Crontab
     public function removeAllJobs()
     {
         $this->jobs = array();
+
+        return $this;
+    }
+
+    /**
+     * Remove all job for current crontab
+     *
+     * @return Crontab
+     */
+    public function removeJob($job)
+    {
+        unset($this->jobs[$job->getHash()]);
 
         return $this;
     }
